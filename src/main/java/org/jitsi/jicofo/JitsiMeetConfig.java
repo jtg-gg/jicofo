@@ -126,6 +126,11 @@ public class JitsiMeetConfig
     public static final String START_BITRATE_PNAME = "startBitrate";
 
     /**
+     * The name of the "videoCodec" property.
+     */
+    public static final String VIDEO_CODEC_PNAME = "videoCodec";
+
+    /**
      * The name of the "stereo" property.
      */
     public static final String STEREO_PNAME = "stereo";
@@ -140,6 +145,11 @@ public class JitsiMeetConfig
      * The default value of the "startBitrate" property.
      */
     public static final int START_BITRATE_DEFAULT = 800;
+
+    /**
+     * The default value of the "videoCodec" property.
+     */
+    public static final String VIDEO_CODEC_DEFAULT = "VP8";
 
     private final Map<String, String> properties;
 
@@ -321,6 +331,18 @@ public class JitsiMeetConfig
     {
         Integer startBitrate = getInt(START_BITRATE_PNAME);
         return startBitrate == null ? START_BITRATE_DEFAULT : startBitrate;
+    }
+
+    /**
+     * @return the "video codec" which should be included in offers.
+     */
+    public String getVideoCodec()
+    {
+        String videoCodec = properties.get(VIDEO_CODEC_PNAME);
+        if (StringUtils.isNullOrEmpty(videoCodec))
+            return VIDEO_CODEC_DEFAULT;
+
+        return videoCodec;
     }
 
     /**

@@ -318,7 +318,7 @@ public class ColibriThreadingTest
         contents.add(JingleOfferFactory.createAudioContent(false, true, false));
 
         contents.add(
-            JingleOfferFactory.createVideoContent(false, true, false, -1, -1));
+            JingleOfferFactory.createVideoContent(false, true, false, -1, -1, "VP8"));
 
         contents.add(JingleOfferFactory.createDataContent(false, true));
 

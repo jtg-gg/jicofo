@@ -284,7 +284,8 @@ public class ChannelAllocator implements Runnable
                     JingleOfferFactory.createVideoContent(
                             disableIce, useDtls, useRtx,
                             config.getMinBitrate(),
-                            config.getStartBitrate()));
+                            config.getStartBitrate(),
+                            config.getVideoCodec()));
         }
 
         // Is SCTP enabled ?

@@ -104,13 +104,13 @@ public class JingleOfferFactory
      */
     public static ContentPacketExtension createVideoContent(
             boolean disableIce, boolean useDtls, boolean useRtx,
-            int minBitrate, int startBitrate)
+            int minBitrate, int startBitrate, String videoCodec)
     {
         ContentPacketExtension videoContentPe
             = createContentPacketExtension(
                     MediaType.VIDEO, disableIce, useDtls);
 
-        addVideoToContent(videoContentPe, useRtx, minBitrate, startBitrate);
+        addVideoToContent(videoContentPe, useRtx, minBitrate, startBitrate, videoCodec);
 
         return videoContentPe;
     }
@@ -167,7 +167,8 @@ public class JingleOfferFactory
     private static void addVideoToContent(ContentPacketExtension content,
                                           boolean useRtx,
                                           int minBitrate,
-                                          int startBitrate)
+                                          int startBitrate,
+                                          String videoCodec)
     {
         RtpDescriptionPacketExtension rtpDesc
             = new RtpDescriptionPacketExtension();
@@ -193,32 +194,44 @@ public class JingleOfferFactory
         rtpDesc.addExtmap(absSendTime);
 
         // a=rtpmap:100 VP8/90000
-        int vp8pt = 100;
-        PayloadTypePacketExtension vp8
-            = addPayloadTypeExtension(rtpDesc, vp8pt, Constants.VP8, 90000);
+        int codecPt;
+        switch (videoCodec) {
+            case "VP9":
+                codecPt = 101;
+                break;
+            case "H264":
+                codecPt = 107;
+                break;
+            default:
+                codecPt = 100;
+                videoCodec = "VP8";
+        }
+
+        PayloadTypePacketExtension codec
+            = addPayloadTypeExtension(rtpDesc, codecPt, videoCodec, 90000);
 
         // a=rtcp-fb:100 ccm fir
-        vp8.addRtcpFeedbackType(createRtcpFbPacketExtension("ccm", "fir"));
+        codec.addRtcpFeedbackType(createRtcpFbPacketExtension("ccm", "fir"));
 
         // a=rtcp-fb:100 nack
-        vp8.addRtcpFeedbackType(createRtcpFbPacketExtension("nack", null));
+        codec.addRtcpFeedbackType(createRtcpFbPacketExtension("nack", null));
 
         // a=rtcp-fb:100 nack pli
-        vp8.addRtcpFeedbackType(createRtcpFbPacketExtension("nack", "pli"));
+        codec.addRtcpFeedbackType(createRtcpFbPacketExtension("nack", "pli"));
 
         // a=rtcp-fb:100 goog-remb
-        vp8.addRtcpFeedbackType(createRtcpFbPacketExtension("goog-remb", null));
+        codec.addRtcpFeedbackType(createRtcpFbPacketExtension("goog-remb", null));
 
         if (minBitrate != -1)
         {
             addParameterExtension(
-                vp8, "x-google-min-bitrate", String.valueOf(minBitrate));
+                codec, "x-google-min-bitrate", String.valueOf(minBitrate));
         }
 
         if (startBitrate != -1)
         {
             addParameterExtension(
-                vp8, "x-google-start-bitrate", String.valueOf(startBitrate));
+                codec, "x-google-start-bitrate", String.valueOf(startBitrate));
         }
 
         if (useRtx)
@@ -228,7 +241,7 @@ public class JingleOfferFactory
                 = addPayloadTypeExtension(rtpDesc, 96, Constants.RTX, 90000);
 
             // a=fmtp:96 apt=100
-            addParameterExtension(rtx, "apt", String.valueOf(vp8pt));
+            addParameterExtension(rtx, "apt", String.valueOf(codecPt));
 
             // Chrome doesn't have these when it creates an offer, but they were
             // observed in a hangouts conference. Not sure whether they have any
